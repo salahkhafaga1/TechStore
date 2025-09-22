@@ -1,102 +1,143 @@
-import Image from "next/image";
+'use client';
+import { useState, useEffect } from 'react';
+import ProductCard from '@/components/ProductCard';
+
+// بيانات افتراضية إذا لم توجد بيانات محفوظة
+const defaultProducts = [
+  {
+    id: 1,
+    name: "AirPods Pro 3 - أحدث موديل",
+    price: "3,000",
+    description: "جودة صوت رائعة مع عزل ضوضاء متقدم",
+    image: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400",
+    rating: 124,
+    save: "EGP 500",
+    shipping: "شحن مجاني",
+    category: "airpods"
+  },
+  {
+    id: 2, 
+    name: "Headphone Gaming Pro", 
+    price: "1,500",
+    description: "مثالي للألعاب والاستماع بجودة صوت استثنائية",
+    image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400",
+    rating: 89,
+    save: "EGP 200",
+    shipping: "توصيل سريع",
+    category: "headphones"
+  },
+  {
+    id: 3,
+    name: "ساعة ذكية 2024 - تتبع الصحة",
+    price: "2,200",
+    description: "تتبع اللياقة البدنية والصحة بدقة عالية", 
+    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+    rating: 156,
+    shipping: "شحن مجاني",
+    category: "watches"
+  }
+];
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [products, setProducts] = useState([]);
+  const [activeCategory, setActiveCategory] = useState('all');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // جلب البيانات من localStorage عند تحميل الصفحة
+  useEffect(() => {
+    const savedProducts = localStorage.getItem('storeProducts');
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts));
+    } else {
+      // إذا لا توجد بيانات محفوظة، استخدم البيانات الافتراضية
+      setProducts(defaultProducts);
+      localStorage.setItem('storeProducts', JSON.stringify(defaultProducts));
+    }
+  }, []);
+
+  const categories = [
+    { id: 'all', name: 'جميع المنتجات', icon: '🏠' },
+    { id: 'airpods', name: 'الإيربودز', icon: '🎧' },
+    { id: 'headphones', name: 'الهيدفون', icon: '🎮' },
+    { id: 'watches', name: 'الساعات', icon: '⌚' }
+  ];
+
+  const filteredProducts = activeCategory === 'all' 
+    ? products 
+    : products.filter(product => product.category === activeCategory);
+
+  return (
+    <div>
+      {/* Header */}
+      <header className="header">
+        <div className="container">
+          <div className="header-content">
+            <div>
+              <h1 className='pans'>🎮 TechStore</h1>
+              <p className='pans'>أحدث المنتجات التكنولوجية</p>
+            </div>
+            
+            <div className="animated-icons">
+              <span className="icon">🎧</span>
+              <span className="icon">🎮</span>
+              <span className="icon">⌚</span>
+            </div>
+          </div>
         </div>
+      </header>
+
+      {/* قسم التصنيفات */}
+      <section className="categories-section">
+        <div className="container">
+          <div className="categories-tabs">
+            {categories.map(category => (
+              <button
+                key={category.id}
+                className={`category-tab ${activeCategory === category.id ? 'active' : ''}`}
+                onClick={() => setActiveCategory(category.id)}
+              >
+                <span className="category-icon">{category.icon}</span>
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <main className="container">
+        {filteredProducts.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 20px',
+            color: '#666'
+          }}>
+            <h3>لا توجد منتجات حالياً</h3>
+            <p>قم بإضافة منتجات من لوحة التحكم</p>
+            <a href="/admin" style={{
+              color: '#667eea',
+              textDecoration: 'none',
+              fontWeight: '600'
+            }}>
+              الذهاب إلى لوحة التحكم
+            </a>
+          </div>
+        ) : (
+          <div className="products-grid">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="container">
+          <p>© 2024 TechStore. جميع الحقوق محفوظة.</p>
+          <p style={{ marginTop: '10px', fontSize: '0.7rem' }}>
+            <a href="/admin" style={{ color: '#ffd814' }}>لوحة التحكم للمدير</a>
+          </p>
+        </div>
       </footer>
     </div>
   );

@@ -1,26 +1,328 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Reset أساسي */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #eaeded;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #0f1111;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+/* الهيدر - نسخة Amazon */
+.header {
+  background: #131921;
+  color: white;
+  padding: 12px 0;
+  position: relative;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.header h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #ff9900;
+  margin: 0;
+}
+
+.header p {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.animated-icons {
+  display: flex;
+  gap: 8px;
+}
+
+.icon {
+  font-size: 1rem;
+}
+
+/* شريط البحث (مثل Amazon) */
+.search-bar {
+  display: flex;
+  flex: 1;
+  max-width: 800px;
+  margin: 0 20px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid #febd69;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.9rem;
+}
+
+.search-button {
+  background: #febd69;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+/* شبكة المنتجات - نسخة Amazon */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  padding: 20px 0;
+}
+
+/* كارت المنتج - نسخة Amazon */
+.product-card {
+  background: white;
+  border-radius: 4px;
+  padding: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.product-image {
+  width: 100%;
+  height: 200px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.product-name {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #0f1111;
+  line-height: 1.3;
+  height: 2.6em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stars {
+  color: #ffa41c;
+  font-size: 0.9rem;
+}
+
+.rating-count {
+  color: #007185;
+  font-size: 0.8rem;
+  margin-left: 5px;
+}
+
+.product-price {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #b12704;
+  margin-bottom: 8px;
+}
+
+.price-save {
+  color: #b12704;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+.product-description {
+  color: #565959;
+  font-size: 0.8rem;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.shipping {
+  color: #565959;
+  font-size: 0.75rem;
+  margin-bottom: 12px;
+}
+
+.product-footer {
+  margin-top: auto;
+}
+
+.order-button {
+  width: 100%;
+  background: #ffd814;
+  color: #0f1111;
+  border: none;
+  padding: 8px 0;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  border: 1px solid #fcd200;
+}
+
+.order-button:hover {
+  background: #f7ca00;
+}
+
+.whatsapp-icon {
+  margin-right: 5px;
+}
+
+/* تذييل الصفحة */
+.footer {
+  background: #131921;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.footer p {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* تحسينات responsive */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .search-bar {
+    margin: 0;
+    width: 100%;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    padding: 15px 0;
+  }
+  
+  .product-card {
+    padding: 10px;
+  }
+  
+  .product-image {
+    height: 150px;
+  }
+  
+  .product-name {
+    font-size: 1rem;
+    height: 2.4em;
+  }
+  
+  .product-price {
+    font-size: 1.2rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+}/* قسم التصنيفات */
+.categories-section {
+  background: #232f3e;
+  padding: 15px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.categories-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 5px 0;
+}
+
+.category-tab {
+  background: transparent;
+  color: white;
+  border: 1px solid #465a6e;
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.category-tab:hover {
+  background: #465a6e;
+  border-color: #ffd814;
+}
+
+.category-tab.active {
+  background: #ffd814;
+  color: #0f1111;
+  border-color: #ffd814;
+  font-weight: 600;
+}
+
+.category-icon {
+  font-size: 1.1rem;
+}
+
+/* تحسين الشريط المتداول */
+.categories-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.categories-tabs::-webkit-scrollbar-track {
+  background: #465a6e;
+}
+
+.categories-tabs::-webkit-scrollbar-thumb {
+  background: #ffd814;
+  border-radius: 2px;
+}
+.pans{
+    display: flex;
 }
