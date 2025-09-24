@@ -1,58 +1,55 @@
 'use client';
 import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
+import { getProducts } from '@/lib/firebase';
 
-// بيانات افتراضية إذا لم توجد بيانات محفوظة
+// بيانات افتراضية إذا فشل الاتصال
 const defaultProducts = [
   {
     id: 1,
-    name: "AirPods Pro 3 - أحدث موديل",
-    price: "3,000",
-    description: "جودة صوت رائعة مع عزل ضوضاء متقدم",
+    name: "AirPods Pro - وضع عدم الاتصال",
+    price: "2,500",
+    description: "جودة صوت رائعة - بيانات محلية",
     image: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400",
-    rating: 124,
-    save: "EGP 500",
-    shipping: "شحن مجاني",
-    category: "airpods"
-  },
-  {
-    id: 2, 
-    name: "Headphone Gaming Pro", 
-    price: "1,500",
-    description: "مثالي للألعاب والاستماع بجودة صوت استثنائية",
-    image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400",
-    rating: 89,
-    save: "EGP 200",
-    shipping: "توصيل سريع",
-    category: "headphones"
-  },
-  {
-    id: 3,
-    name: "ساعة ذكية 2024 - تتبع الصحة",
-    price: "2,200",
-    description: "تتبع اللياقة البدنية والصحة بدقة عالية", 
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
-    rating: 156,
-    shipping: "شحن مجاني",
-    category: "watches"
+    category: "airpods",
+    rating: 50,
+    shipping: "شحن مجاني"
   }
 ];
 
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
 
-  // جلب البيانات من localStorage عند تحميل الصفحة
   useEffect(() => {
-    const savedProducts = localStorage.getItem('storeProducts');
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
-    } else {
-      // إذا لا توجد بيانات محفوظة، استخدم البيانات الافتراضية
-      setProducts(defaultProducts);
-      localStorage.setItem('storeProducts', JSON.stringify(defaultProducts));
-    }
+    const loadProducts = async () => {
+      try {
+        console.log('🔄 محاولة الاتصال بـ Firebase...');
+        const productsData = await getProducts();
+        
+        if (productsData.length > 0) {
+          setProducts(productsData);
+          setIsOnline(true);
+        } else {
+          // إذا مفيش بيانات، استخدم البيانات الافتراضية
+          setProducts(defaultProducts);
+          setIsOnline(false);
+        }
+      } catch (error) {
+        console.error('❌ فشل الاتصال، استخدام البيانات المحلية');
+        setProducts(defaultProducts);
+        setIsOnline(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
   }, []);
+
+  // ... باقي الكود بدون تغيير
 
   const categories = [
     { id: 'all', name: 'جميع المنتجات', icon: '🏠' },
@@ -65,17 +62,19 @@ export default function Home() {
     ? products 
     : products.filter(product => product.category === activeCategory);
 
+  if (loading) {
+    return <div>جاري التحميل...</div>;
+  }
+
   return (
     <div>
-      {/* Header */}
       <header className="header">
         <div className="container">
           <div className="header-content">
             <div>
-              <h1 className='pans'>🎮 TechStore</h1>
-              <p className='pans'>أحدث المنتجات التكنولوجية</p>
+              <h1>🎮 TechStore</h1>
+              <p>أحدث المنتجات التكنولوجية</p>
             </div>
-            
             <div className="animated-icons">
               <span className="icon">🎧</span>
               <span className="icon">🎮</span>
@@ -85,7 +84,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* قسم التصنيفات */}
       <section className="categories-section">
         <div className="container">
           <div className="categories-tabs">
@@ -103,21 +101,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Main Content */}
       <main className="container">
         {filteredProducts.length === 0 ? (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '60px 20px',
-            color: '#666'
-          }}>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666' }}>
             <h3>لا توجد منتجات حالياً</h3>
             <p>قم بإضافة منتجات من لوحة التحكم</p>
-            <a href="/admin" style={{
-              color: '#667eea',
-              textDecoration: 'none',
-              fontWeight: '600'
-            }}>
+            <a href="/admin" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '600' }}>
               الذهاب إلى لوحة التحكم
             </a>
           </div>
@@ -130,7 +119,6 @@ export default function Home() {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="footer">
         <div className="container">
           <p>© 2024 TechStore. جميع الحقوق محفوظة.</p>

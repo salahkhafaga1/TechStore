@@ -8,21 +8,25 @@ export default function AdminPanel() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
     description: '',
-    image: '', // سيتم حفظ الصورة كـ base64 أو رابط
-    imageUrl: '', // للمعاينة فقط
+    image: '',
+    imageUrl: '',
     category: 'airpods'
   });
 
   const [isEditing, setIsEditing] = useState(null);
 
-  const ADMIN_PASSWORD = 'salah2004';
+  const ADMIN_PASSWORD = 'salahkhafaga2004';
 
-  // دالة لتحويل الصورة إلى base64
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const convertImageToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -58,7 +62,6 @@ export default function AdminPanel() {
     }
   };
 
-  // جلب البيانات من Firebase
   useEffect(() => {
     if (isLoggedIn) {
       setLoading(true);
@@ -96,7 +99,7 @@ export default function AdminPanel() {
         name: newProduct.name,
         price: newProduct.price,
         description: newProduct.description,
-        image: newProduct.image, // الصورة كـ base64
+        image: newProduct.image,
         category: newProduct.category,
         rating: Math.floor(Math.random() * 100) + 50,
         save: Math.random() > 0.5 ? `EGP ${Math.floor(Math.random() * 500) + 100}` : '',
@@ -128,7 +131,7 @@ export default function AdminPanel() {
       price: product.price,
       description: product.description,
       image: product.image,
-      imageUrl: product.image, // إذا كانت base64
+      imageUrl: product.image,
       category: product.category
     });
     setIsEditing(product.id);
@@ -154,6 +157,22 @@ export default function AdminPanel() {
   };
 
   if (!isLoggedIn) {
+    if (!isClient) {
+      return (
+        <div style={{ 
+          minHeight: '100vh', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }}>
+          <div style={{ color: 'white', textAlign: 'center' }}>
+            <h2>⏳ جاري التحميل...</h2>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div style={{ 
         minHeight: '100vh', 
@@ -189,6 +208,7 @@ export default function AdminPanel() {
                 marginBottom: '20px',
                 fontSize: '16px'
               }}
+              suppressHydrationWarning
             />
             
             <button
@@ -203,6 +223,7 @@ export default function AdminPanel() {
                 fontSize: '16px',
                 cursor: 'pointer'
               }}
+              suppressHydrationWarning
             >
               دخول
             </button>
@@ -214,7 +235,7 @@ export default function AdminPanel() {
             color: '#666',
             fontSize: '14px'
           }}>
-           
+            كلمة المرور الافتراضية
           </p>
         </div>
       </div>
@@ -231,7 +252,6 @@ export default function AdminPanel() {
         maxWidth: '1200px', 
         margin: '0 auto' 
       }}>
-        {/* Header */}
         <div style={{
           background: 'white',
           padding: '20px',
@@ -260,7 +280,6 @@ export default function AdminPanel() {
           </button>
         </div>
 
-        {/* نموذج إضافة/تعديل المنتج */}
         <div style={{ 
           background: 'white', 
           padding: '25px', 
@@ -352,7 +371,6 @@ export default function AdminPanel() {
               </select>
             </div>
             
-            {/* معاينة الصورة */}
             {newProduct.imageUrl && (
               <div style={{ gridColumn: '1 / -1', textAlign: 'center' }}>
                 <label style={{ display: 'block', marginBottom: '10px', color: '#666' }}>
@@ -428,7 +446,6 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* قائمة المنتجات */}
         <div style={{ 
           background: 'white', 
           padding: '25px', 
