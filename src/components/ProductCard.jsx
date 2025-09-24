@@ -27,7 +27,7 @@ const ProductCard = ({ product }) => {
       
       <div className="product-rating">
         <span className="stars">★★★★★</span>
-        <span className="rating-count">({product.rating})</span>
+        <span className="rating-count">({product.rating || 0})</span>
       </div>
       
       <div className="product-price">{"EGP " + product.price}</div>

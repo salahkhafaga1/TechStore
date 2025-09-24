@@ -1,36 +1,26 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { db, getProducts, addProduct, updateProduct, deleteProduct } from '@/lib/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 
 export default function AdminPanel() {
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
     description: '',
-    image: null, // تغيير من string إلى null
-    imageUrl: '', // للعرض فقط
+    image: '', // سيتم حفظ الصورة كـ base64 أو رابط
+    imageUrl: '', // للمعاينة فقط
     category: 'airpods'
   });
 
   const [isEditing, setIsEditing] = useState(null);
 
   const ADMIN_PASSWORD = 'salah2004';
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsLoggedIn(true);
-      const savedProducts = localStorage.getItem('storeProducts');
-      if (savedProducts) {
-        setProducts(JSON.parse(savedProducts));
-      }
-    } else {
-      alert('كلمة المرور خاطئة!');
-    }
-  };
 
   // دالة لتحويل الصورة إلى base64
   const convertImageToBase64 = (file) => {
@@ -45,13 +35,11 @@ export default function AdminPanel() {
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      // التحقق من نوع الصورة
       if (!file.type.startsWith('image/')) {
         alert('الرجاء اختيار ملف صورة فقط!');
         return;
       }
 
-      // التحقق من حجم الصورة (5MB كحد أقصى)
       if (file.size > 5 * 1024 * 1024) {
         alert('حجم الصورة كبير جداً! الحد الأقصى 5MB');
         return;
@@ -62,7 +50,7 @@ export default function AdminPanel() {
         setNewProduct({
           ...newProduct,
           image: base64Image,
-          imageUrl: URL.createObjectURL(file) // لعرض معاينة الصورة
+          imageUrl: URL.createObjectURL(file)
         });
       } catch (error) {
         alert('حدث خطأ أثناء رفع الصورة!');
@@ -70,60 +58,93 @@ export default function AdminPanel() {
     }
   };
 
-  const saveProducts = (updatedProducts) => {
-    setProducts(updatedProducts);
-    localStorage.setItem('storeProducts', JSON.stringify(updatedProducts));
+  // جلب البيانات من Firebase
+  useEffect(() => {
+    if (isLoggedIn) {
+      setLoading(true);
+      const unsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
+        const productsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setProducts(productsData);
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [isLoggedIn]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (password === ADMIN_PASSWORD) {
+      setIsLoggedIn(true);
+    } else {
+      alert('كلمة المرور خاطئة!');
+    }
   };
 
-  const addProduct = async () => {
+  const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price || !newProduct.image) {
       alert('الرجاء ملء جميع الحقول المطلوبة وإضافة صورة!');
       return;
     }
 
-    let updatedProducts;
-    
-    if (isEditing !== null) {
-      updatedProducts = products.map((p, i) => 
-        i === isEditing ? { ...newProduct, id: p.id } : p
-      );
-      setIsEditing(null);
-    } else {
-      updatedProducts = [...products, { 
-        ...newProduct, 
-        id: Date.now(),
+    try {
+      setLoading(true);
+      const productData = {
+        name: newProduct.name,
+        price: newProduct.price,
+        description: newProduct.description,
+        image: newProduct.image, // الصورة كـ base64
+        category: newProduct.category,
         rating: Math.floor(Math.random() * 100) + 50,
         save: Math.random() > 0.5 ? `EGP ${Math.floor(Math.random() * 500) + 100}` : '',
-        shipping: Math.random() > 0.3 ? 'شحن مجاني' : 'توصيل سريع'
-      }];
+        shipping: Math.random() > 0.3 ? 'شحن مجاني' : 'توصيل سريع',
+        createdAt: new Date().toISOString()
+      };
+
+      if (isEditing !== null) {
+        await updateProduct(isEditing, productData);
+        alert('تم تعديل المنتج بنجاح!');
+      } else {
+        await addProduct(productData);
+        alert('تم إضافة المنتج بنجاح!');
+      }
+
+      setNewProduct({ name: '', price: '', description: '', image: '', imageUrl: '', category: 'airpods' });
+      setIsEditing(null);
+    } catch (error) {
+      alert('حدث خطأ أثناء حفظ المنتج!');
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
-    
-    saveProducts(updatedProducts);
-    setNewProduct({ 
-      name: '', 
-      price: '', 
-      description: '', 
-      image: null, 
-      imageUrl: '', 
-      category: 'airpods' 
-    });
-    alert(isEditing !== null ? 'تم تعديل المنتج بنجاح!' : 'تم إضافة المنتج بنجاح!');
   };
 
-  const editProduct = (index) => {
-    const productToEdit = products[index];
+  const handleEditProduct = (product) => {
     setNewProduct({
-      ...productToEdit,
-      imageUrl: productToEdit.image // إذا كانت الصورة base64
+      name: product.name,
+      price: product.price,
+      description: product.description,
+      image: product.image,
+      imageUrl: product.image, // إذا كانت base64
+      category: product.category
     });
-    setIsEditing(index);
+    setIsEditing(product.id);
   };
 
-  const deleteProduct = (index) => {
+  const handleDeleteProduct = async (id) => {
     if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
-      const updatedProducts = products.filter((_, i) => i !== index);
-      saveProducts(updatedProducts);
-      alert('تم حذف المنتج بنجاح!');
+      try {
+        setLoading(true);
+        await deleteProduct(id);
+        alert('تم حذف المنتج بنجاح!');
+      } catch (error) {
+        alert('حدث خطأ أثناء حذف المنتج!');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -193,7 +214,7 @@ export default function AdminPanel() {
             color: '#666',
             fontSize: '14px'
           }}>
-            
+           
           </p>
         </div>
       </div>
@@ -221,7 +242,7 @@ export default function AdminPanel() {
           alignItems: 'center'
         }}>
           <h1 style={{ color: '#333', margin: 0 }}>
-            🛠️ لوحة تحكم المدير
+            🛠️ لوحة تحكم المدير {loading && '⏳'}
           </h1>
           
           <button
@@ -371,32 +392,26 @@ export default function AdminPanel() {
           
           <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
             <button
-              onClick={addProduct}
+              onClick={handleAddProduct}
+              disabled={loading}
               style={{
-                background: '#48bb78',
+                background: loading ? '#ccc' : '#48bb78',
                 color: 'white',
                 padding: '12px 25px',
                 border: 'none',
                 borderRadius: '5px',
-                cursor: 'pointer',
+                cursor: loading ? 'not-allowed' : 'pointer',
                 fontWeight: '600'
               }}
             >
-              {isEditing !== null ? '💾 حفظ التعديلات' : '➕ إضافة المنتج'}
+              {loading ? '⏳ جاري الحفظ...' : (isEditing !== null ? '💾 حفظ التعديلات' : '➕ إضافة المنتج')}
             </button>
             
             {isEditing !== null && (
               <button
                 onClick={() => {
                   setIsEditing(null);
-                  setNewProduct({ 
-                    name: '', 
-                    price: '', 
-                    description: '', 
-                    image: null, 
-                    imageUrl: '', 
-                    category: 'airpods' 
-                  });
+                  setNewProduct({ name: '', price: '', description: '', image: '', imageUrl: '', category: 'airpods' });
                 }}
                 style={{
                   background: '#ccc',
@@ -423,13 +438,17 @@ export default function AdminPanel() {
             📦 إدارة المنتجات ({products.length} منتج)
           </h3>
           
-          {products.length === 0 ? (
+          {loading ? (
+            <p style={{ textAlign: 'center', color: '#666', padding: '40px' }}>
+              ⏳ جاري تحميل المنتجات...
+            </p>
+          ) : products.length === 0 ? (
             <p style={{ textAlign: 'center', color: '#666', padding: '40px' }}>
               لا توجد منتجات حتى الآن. ابدأ بإضافة منتجك الأول!
             </p>
           ) : (
             <div style={{ display: 'grid', gap: '15px' }}>
-              {products.map((product, index) => (
+              {products.map((product) => (
                 <div key={product.id} style={{
                   border: '1px solid #e2e8f0',
                   padding: '15px',
@@ -461,14 +480,15 @@ export default function AdminPanel() {
                   
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button
-                      onClick={() => editProduct(index)}
+                      onClick={() => handleEditProduct(product)}
+                      disabled={loading}
                       style={{
-                        background: '#3182ce',
+                        background: loading ? '#ccc' : '#3182ce',
                         color: 'white',
                         padding: '8px 15px',
                         border: 'none',
                         borderRadius: '5px',
-                        cursor: 'pointer',
+                        cursor: loading ? 'not-allowed' : 'pointer',
                         fontSize: '0.8rem'
                       }}
                     >
@@ -476,14 +496,15 @@ export default function AdminPanel() {
                     </button>
                     
                     <button
-                      onClick={() => deleteProduct(index)}
+                      onClick={() => handleDeleteProduct(product.id)}
+                      disabled={loading}
                       style={{
-                        background: '#e53e3e',
+                        background: loading ? '#ccc' : '#e53e3e',
                         color: 'white',
                         padding: '8px 15px',
                         border: 'none',
                         borderRadius: '5px',
-                        cursor: 'pointer',
+                        cursor: loading ? 'not-allowed' : 'pointer',
                         fontSize: '0.8rem'
                       }}
                     >

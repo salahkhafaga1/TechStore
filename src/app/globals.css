@@ -57,28 +57,49 @@ body {
   font-size: 1rem;
 }
 
-/* شريط البحث (مثل Amazon) */
-.search-bar {
-  display: flex;
-  flex: 1;
-  max-width: 800px;
-  margin: 0 20px;
+/* قسم التصنيفات */
+.categories-section {
+  background: #232f3e;
+  padding: 15px 0;
+  border-bottom: 1px solid #ddd;
 }
 
-.search-input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 2px solid #febd69;
-  border-radius: 4px 0 0 4px;
+.categories-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 5px 0;
+}
+
+.category-tab {
+  background: transparent;
+  color: white;
+  border: 1px solid #465a6e;
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.9rem;
 }
 
-.search-button {
-  background: #febd69;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 0 4px 4px 0;
-  cursor: pointer;
+.category-tab:hover {
+  background: #465a6e;
+  border-color: #ffd814;
+}
+
+.category-tab.active {
+  background: #ffd814;
+  color: #0f1111;
+  border-color: #ffd814;
+  font-weight: 600;
+}
+
+.category-icon {
+  font-size: 1.1rem;
 }
 
 /* شبكة المنتجات - نسخة Amazon */
@@ -231,11 +252,6 @@ body {
     gap: 10px;
   }
   
-  .search-bar {
-    margin: 0;
-    width: 100%;
-  }
-  
   .products-grid {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 10px;
@@ -258,71 +274,4 @@ body {
   .product-price {
     font-size: 1.2rem;
   }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  .products-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-  }
-}/* قسم التصنيفات */
-.categories-section {
-  background: #232f3e;
-  padding: 15px 0;
-  border-bottom: 1px solid #ddd;
-}
-
-.categories-tabs {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 5px 0;
-}
-
-.category-tab {
-  background: transparent;
-  color: white;
-  border: 1px solid #465a6e;
-  padding: 10px 15px;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-}
-
-.category-tab:hover {
-  background: #465a6e;
-  border-color: #ffd814;
-}
-
-.category-tab.active {
-  background: #ffd814;
-  color: #0f1111;
-  border-color: #ffd814;
-  font-weight: 600;
-}
-
-.category-icon {
-  font-size: 1.1rem;
-}
-
-/* تحسين الشريط المتداول */
-.categories-tabs::-webkit-scrollbar {
-  height: 4px;
-}
-
-.categories-tabs::-webkit-scrollbar-track {
-  background: #465a6e;
-}
-
-.categories-tabs::-webkit-scrollbar-thumb {
-  background: #ffd814;
-  border-radius: 2px;
-}
-.pans{
-    display: flex;
 }

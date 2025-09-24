@@ -1,19 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
+  trailingSlash: true,
   images: {
-    domains: [
-      'images.unsplash.com',
-      'i.ibb.co',
-      'imgbb.com',
-      'example.com'
-    ],
+    unoptimized: true,
+    domains: ['images.unsplash.com'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**', // يسمح بكل الروابط
+        hostname: '**',
       },
     ],
   },
+  basePath: '', // تأكد أن هذا فارغ
+  assetPrefix: '', // تأكد أن هذا فارغ
 }
 
 module.exports = nextConfig
