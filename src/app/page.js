@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { getProducts } from '@/lib/firebase';
+import Link from 'next/link'; // 👈 استيراد Link عشان الزر
 
 export default function Home() {
   // 1. تعريف الأقسام الأساسية
@@ -67,7 +68,7 @@ export default function Home() {
         return product.category.toLowerCase() === activeCategory.toLowerCase();
       });
 
-  // ✅ 6. شاشة التحميل (لازم تكون هنا قبل الـ return اللي تحت)
+  // 6. شاشة التحميل
   if (loading) {
     return (
       <div className="loader-container">
@@ -83,20 +84,38 @@ export default function Home() {
     );
   }
 
-  // ✅ 7. واجهة الموقع (تظهر بعد انتهاء التحميل)
+  // 7. واجهة الموقع
   return (
     <div>
       <header className="header">
         <div className="container">
-          <div className="header-content">
+          <div className="header-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h1>🎮 TechStore</h1>
               <p>أحدث المنتجات التكنولوجية</p>
             </div>
-            <div className="animated-icons">
-              <span className="icon">🎧</span>
-              <span className="icon">🎮</span>
-              <span className="icon">⌚</span>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              {/* زر لوحة التحكم الجديد 👇 */}
+              <Link href="/admin" style={{ 
+                background: 'rgba(255, 255, 255, 0.2)', 
+                padding: '8px 12px', 
+                borderRadius: '8px', 
+                color: 'white', 
+                textDecoration: 'none',
+                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                border: '1px solid rgba(255,255,255,0.3)'
+              }}>
+                ⚙️ الإدارة
+              </Link>
+
+              <div className="animated-icons">
+                <span className="icon">🎧</span>
+                <span className="icon">⌚</span>
+              </div>
             </div>
           </div>
         </div>
@@ -126,9 +145,9 @@ export default function Home() {
           <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666' }}>
             <h3>لا توجد منتجات حالياً في هذا القسم</h3>
             <p>قم بإضافة منتجات من لوحة التحكم</p>
-            <a href="/admin" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '600' }}>
+            <Link href="/admin" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '600' }}>
               الذهاب إلى لوحة التحكم
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="products-grid">
@@ -142,9 +161,6 @@ export default function Home() {
       <footer className="footer">
         <div className="container">
           <p>© 2024 TechStore. جميع الحقوق محفوظة.</p>
-          <p style={{ marginTop: '10px', fontSize: '0.7rem' }}>
-            <a href="/admin" style={{ color: '#ffd814' }}>لوحة التحكم للمدير</a>
-          </p>
         </div>
       </footer>
     </div>
