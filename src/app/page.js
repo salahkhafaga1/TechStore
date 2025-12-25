@@ -58,7 +58,7 @@ export default function Home() {
       }
     };
     loadProducts();
-  }, []);
+  }, [defaultCategories]);
 
   // 5. الفلترة
   const filteredProducts = activeCategory === 'all' 

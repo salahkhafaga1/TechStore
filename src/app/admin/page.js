@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { db, getProducts, addProduct, updateProduct, deleteProduct } from '@/lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
+import Link from 'next/link';
 
 export default function AdminPanel() {
   // State
@@ -209,7 +210,7 @@ export default function AdminPanel() {
         <div style={{ background: 'white', padding: '20px', borderRadius: '10px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <h1 style={{ color: '#333', margin: 0, fontSize: '1.5rem' }}>🛠️ لوحة التحكم {loading && '⏳'}</h1>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <a href="/" style={{ textDecoration: 'none', padding: '8px 15px', background: '#667eea', color: 'white', borderRadius: '5px' }}>🏠 الموقع</a>
+            <Link href="/" style={{ textDecoration: 'none', padding: '8px 15px', background: '#667eea', color: 'white', borderRadius: '5px' }}>🏠 الموقع</Link>
             <button onClick={logout} style={{ background: '#ff6b6b', color: 'white', padding: '8px 15px', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>تسجيل خروج</button>
           </div>
         </div>
@@ -273,6 +274,7 @@ export default function AdminPanel() {
             <textarea placeholder="المواصفات (كل سطر مواصفة)" value={newProduct.specifications.join('\n')} onChange={(e) => setNewProduct({ ...newProduct, specifications: e.target.value.split('\n') })} style={{ ...inputStyle, gridColumn: '1 / -1', minHeight: '80px' }} />
 
             {/* معاينة الصورة */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             {newProduct.imageUrl && <img src={newProduct.imageUrl} alt="preview" style={{ width: '100px', height: '100px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '5px' }} />}
           </div>
 
@@ -310,6 +312,7 @@ export default function AdminPanel() {
             {products.map((p) => (
               <div key={p.id} style={{ border: '1px solid #eee', padding: '10px', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.image} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '5px' }} />
                   <div>
                     <div style={{ fontWeight: 'bold' }}>{p.name}</div>
