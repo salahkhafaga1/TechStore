@@ -3,69 +3,87 @@ import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { getProducts } from '@/lib/firebase';
 
-// بيانات افتراضية إذا فشل الاتصال
-const defaultProducts = [
-  {
-    id: 1,
-    name: "AirPods Pro - وضع عدم الاتصال",
-    price: "2,500",
-    description: "جودة صوت رائعة - بيانات محلية",
-    image: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400",
-    category: "airpods",
-    rating: 50,
-    shipping: "شحن مجاني"
-  }
-];
-
 export default function Home() {
+  // 1. تعريف الأقسام الأساسية
+  const defaultCategories = [
+    { id: 'all', name: '🏠 جميع المنتجات', value: 'all' },
+    { id: 'airpods', name: '🎧 الإيربودز', value: 'airpods' },
+    { id: 'headphones', name: '🎮 الهيدفون', value: 'headphones' },
+    { id: 'watches', name: '⌚ الساعات', value: 'watches' },
+    { id: 'others', name: '✨ أخرى', value: 'أخرى' }
+  ];
+
+  // 2. تعريف الحالات (State)
   const [products, setProducts] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [isOnline, setIsOnline] = useState(true);
+  const [categories, setCategories] = useState(defaultCategories);
 
+  // 3. جلب الأقسام المخصصة
+  useEffect(() => {
+    const loadCustomCategories = () => {
+      const savedCategories = localStorage.getItem('storeCategories');
+      if (savedCategories) {
+        try {
+          const customCats = JSON.parse(savedCategories);
+          const formattedCats = customCats.map((cat, index) => {
+            const icon = cat.match(/^[^\w\s]+/)?.[0] || '📌';
+            const name = cat.replace(/^[^\w\s]+\s/, '');
+            return {
+              id: `custom-${index}-${Date.now()}`,
+              name: `${icon} ${name}`,
+              value: name
+            };
+          });
+          setCategories([...defaultCategories, ...formattedCats]);
+        } catch (e) {
+          console.error("Error parsing categories", e);
+        }
+      }
+    };
+    loadCustomCategories();
+  }, []);
+
+  // 4. جلب المنتجات
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        console.log('🔄 محاولة الاتصال بـ Firebase...');
         const productsData = await getProducts();
-        
-        if (productsData.length > 0) {
-          setProducts(productsData);
-          setIsOnline(true);
-        } else {
-          // إذا مفيش بيانات، استخدم البيانات الافتراضية
-          setProducts(defaultProducts);
-          setIsOnline(false);
-        }
+        setProducts(productsData);
       } catch (error) {
-        console.error('❌ فشل الاتصال، استخدام البيانات المحلية');
-        setProducts(defaultProducts);
-        setIsOnline(false);
+        console.error('Error loading products:', error);
       } finally {
         setLoading(false);
       }
     };
-
     loadProducts();
   }, []);
 
-  // ... باقي الكود بدون تغيير
-
-  const categories = [
-    { id: 'all', name: 'جميع المنتجات', icon: '🏠' },
-    { id: 'airpods', name: 'الإيربودز', icon: '🎧' },
-    { id: 'headphones', name: 'الهيدفون', icon: '🎮' },
-    { id: 'watches', name: 'الساعات', icon: '⌚' }
-  ];
-
+  // 5. الفلترة
   const filteredProducts = activeCategory === 'all' 
     ? products 
-    : products.filter(product => product.category === activeCategory);
+    : products.filter(product => {
+        if (!product.category) return false;
+        return product.category.toLowerCase() === activeCategory.toLowerCase();
+      });
 
+  // ✅ 6. شاشة التحميل (لازم تكون هنا قبل الـ return اللي تحت)
   if (loading) {
-    return <div>جاري التحميل...</div>;
+    return (
+      <div className="loader-container">
+        <div className="tech-spinner"></div>
+        <div className="loading-text">
+          <span style={{ fontSize: '1.5rem' }}>🎮</span>
+          <span>جاري تجهيز المتجر...</span>
+        </div>
+        <p style={{ color: '#999', fontSize: '0.8rem', marginTop: '10px' }}>
+          أحدث التكنولوجيا بين يديك
+        </p>
+      </div>
+    );
   }
 
+  // ✅ 7. واجهة الموقع (تظهر بعد انتهاء التحميل)
   return (
     <div>
       <header className="header">
@@ -90,11 +108,13 @@ export default function Home() {
             {categories.map(category => (
               <button
                 key={category.id}
-                className={`category-tab ${activeCategory === category.id ? 'active' : ''}`}
-                onClick={() => setActiveCategory(category.id)}
+                className={`category-tab ${activeCategory === category.value ? 'active' : ''}`}
+                onClick={() => setActiveCategory(category.value)}
               >
-                <span className="category-icon">{category.icon}</span>
-                {category.name}
+                <span className="category-icon">
+                  {category.name.charAt(0)}
+                </span>
+                {category.name.substring(2)}
               </button>
             ))}
           </div>
@@ -104,7 +124,7 @@ export default function Home() {
       <main className="container">
         {filteredProducts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666' }}>
-            <h3>لا توجد منتجات حالياً</h3>
+            <h3>لا توجد منتجات حالياً في هذا القسم</h3>
             <p>قم بإضافة منتجات من لوحة التحكم</p>
             <a href="/admin" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '600' }}>
               الذهاب إلى لوحة التحكم

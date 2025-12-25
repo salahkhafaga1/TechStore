@@ -1,5 +1,14 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc
+} from "firebase/firestore";
 
 // بيانات التكوين من Firebase console
 const firebaseConfig = {
@@ -12,121 +21,84 @@ const firebaseConfig = {
   measurementId: "G-X0HMXWPFC2"
 };
 
-// Initialize Firebase
+// ✅ منع إعادة تهيئة Firebase في Next.js
 const app = initializeApp(firebaseConfig);
+
+// Firestore
 export const db = getFirestore(app);
 
-// دوال للتعامل مع المنتجات
+/* ======================
+   Products Functions
+====================== */
+
 export const getProducts = async () => {
   try {
-    console.log('🔍 جاري جلب المنتجات من Firebase...');
-    const productsCol = collection(db, 'products');
-    const productSnapshot = await getDocs(productsCol);
-    console.log('✅ عدد المنتجات المستلمة:', productSnapshot.size);
-    
-    const productList = productSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
+    const productsCol = collection(db, "products");
+    const snapshot = await getDocs(productsCol);
+
+    return snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...docSnap.data()
     }));
-    
-    console.log('📦 المنتجات:', productList);
-    return productList;
   } catch (error) {
-    console.error('❌ خطأ في جلب المنتجات:', error);
+    console.error("❌ خطأ في جلب المنتجات:", error);
     return [];
+  }
+};
+
+export const getProductById = async (id) => {
+  try {
+    const productRef = doc(db, "products", id);
+    const productSnap = await getDoc(productRef);
+
+    if (!productSnap.exists()) return null;
+
+    return {
+      id: productSnap.id,
+      ...productSnap.data()
+    };
+  } catch (error) {
+    console.error("❌ خطأ في جلب المنتج:", error);
+    return null;
   }
 };
 
 export const addProduct = async (product) => {
   try {
-    console.log('➕ جاري إضافة منتج جديد:', product.name);
-    const productsCol = collection(db, 'products');
+    const productsCol = collection(db, "products");
     const docRef = await addDoc(productsCol, product);
-    console.log('✅ تم إضافة المنتج بنجاح، الـ ID:', docRef.id);
     return docRef.id;
   } catch (error) {
-    console.error('❌ خطأ في إضافة المنتج:', error);
+    console.error("❌ خطأ في إضافة المنتج:", error);
     throw error;
   }
 };
 
 export const updateProduct = async (id, product) => {
   try {
-    console.log('✏️ جاري تعديل المنتج:', id);
-    const productDoc = doc(db, 'products', id);
-    await updateDoc(productDoc, product);
-    console.log('✅ تم تعديل المنتج بنجاح');
+    const productRef = doc(db, "products", id);
+    await updateDoc(productRef, product);
   } catch (error) {
-    console.error('❌ خطأ في تعديل المنتج:', error);
+    console.error("❌ خطأ في تعديل المنتج:", error);
     throw error;
   }
 };
 
 export const deleteProduct = async (id) => {
   try {
-    console.log('🗑️ جاري حذف المنتج:', id);
-    const productDoc = doc(db, 'products', id);
-    await deleteDoc(productDoc);
-    console.log('✅ تم حذف المنتج بنجاح');
+    const productRef = doc(db, "products", id);
+    await deleteDoc(productRef);
   } catch (error) {
-    console.error('❌ خطأ في حذف المنتج:', error);
+    console.error("❌ خطأ في حذف المنتج:", error);
     throw error;
   }
 };
 
-// دالة مساعدة للتحقق من الاتصال
 export const testConnection = async () => {
   try {
-    console.log('🔗 فحص اتصال Firebase...');
-    const productsCol = collection(db, 'products');
-    const snapshot = await getDocs(productsCol);
-    console.log('✅ الاتصال ناجح، عدد المستندات:', snapshot.size);
-    return true;
-  } catch (error) {
-    console.error('❌ فشل الاتصال:', error);
+    const snapshot = await getDocs(collection(db, "products"));
+    return snapshot.size >= 0;
+  } catch {
     return false;
-  }
-};
-
-// دالة للعمل في وضع Offline إذا فشل الاتصال
-export const getProductsWithFallback = async () => {
-  try {
-    const onlineProducts = await getProducts();
-    if (onlineProducts.length > 0) {
-      return onlineProducts;
-    }
-    
-    // بيانات افتراضية إذا لم توجد بيانات
-    const defaultProducts = [
-      {
-        id: 'offline-1',
-        name: "AirPods Pro - تجريبي",
-        price: "2,500",
-        description: "منتج تجريبي - اتصال غير متوفر",
-        image: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400",
-        category: "airpods",
-        rating: 50,
-        shipping: "شحن مجاني"
-      }
-    ];
-    
-    return defaultProducts;
-  } catch (error) {
-    console.error('❌ استخدام البيانات الافتراضية بسبب خطأ:', error);
-    
-    const defaultProducts = [
-      {
-        id: 'offline-1',
-        name: "AirPods Pro - وضع عدم الاتصال",
-        price: "2,500",
-        description: "جودة صوت رائعة - اتصال غير متوفر",
-        image: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400",
-        category: "airpods",
-        rating: 50,
-        shipping: "شحن مجاني"
-      }
-    ];
-    
-    return defaultProducts;
   }
 };
