@@ -91,7 +91,9 @@ export default function Home() {
         <div className="container">
           <div className="header-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <h1>🎮 TechStore</h1>
+              <h1 className="text-2xl font-bold text-amber-500 tracking-wide">
+                 حسام الدين
+              </h1>
               <p>أحدث المنتجات التكنولوجية</p>
             </div>
             
